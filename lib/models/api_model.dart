@@ -5,7 +5,9 @@ class ApiModel {
   String description;
   String url;
   String urlToImage;
-  String publishedAt;
+  String? publishedAt;
+  String? content;
+  String? category;
 
   ApiModel({
     this.sourceName,
@@ -14,6 +16,8 @@ class ApiModel {
     required this.description,
     required this.url,
     required this.urlToImage,
-    required this.publishedAt,
+    this.publishedAt,
+    required this.content,
+    required this.category,
   });
 }

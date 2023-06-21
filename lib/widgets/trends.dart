@@ -1,5 +1,12 @@
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:news_app/helper/api_call.dart';
+import 'package:news_app/helper/category_list.dart';
 import 'package:news_app/helper/trending_list.dart';
+import 'package:news_app/models/api_model.dart';
+import 'package:news_app/models/category_model.dart';
 import 'package:news_app/models/trending_model.dart';
 
 class Trends extends StatefulWidget {
@@ -12,12 +19,30 @@ class Trends extends StatefulWidget {
 }
 
 class _TrendsState extends State<Trends> {
-  List<TrendingModel> newTrends = <TrendingModel>[];
+  List<ApiModel> newTrends = <ApiModel>[];
+  List<CategoryModel> categories = <CategoryModel>[];
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    newTrends = getTrends();
+    categories = getCategories();
+    fetchTrendingNews();
+  }
+
+  fetchTrendingNews() async {
+    TrendNews newsClass = TrendNews();
+
+    for (CategoryModel category in categories) {
+      await newsClass.getNews(category.categoryName!);
+      if (newsClass.apiList.isNotEmpty) {
+        newTrends.add(newsClass.apiList.first);
+      }
+      newsClass.apiList.clear();
+    }
+
+    setState(() {
+      newTrends = List<ApiModel>.from(newTrends);
+    });
   }
 
   @override
@@ -44,16 +69,16 @@ class _TrendsState extends State<Trends> {
               padding: EdgeInsets.zero,
               physics: BouncingScrollPhysics(),
               scrollDirection: Axis.horizontal,
-              itemCount: newTrends.length,
+              itemCount: categories.length,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: TrendingCard(
-                    image: newTrends[index].image!,
-                    headline: newTrends[index].headline!,
-                    tag: newTrends[index].tag!,
-                    channel: newTrends[index].channel!,
-                    channelImg: newTrends[index].channelImg!,
+                    image: newTrends[index].urlToImage!,
+                    headline: newTrends[index].title!,
+                    tag: categories[index].categoryName!,
+                    channel: newTrends[index].sourceName!,
+                    channelImg: categories[index].imageURl!,
                   ),
                 );
               }),
@@ -63,7 +88,7 @@ class _TrendsState extends State<Trends> {
   }
 }
 
-class TrendingCard extends StatelessWidget {
+class TrendingCard extends StatefulWidget {
   final String image;
   final String headline;
   final String tag;
@@ -77,6 +102,48 @@ class TrendingCard extends StatelessWidget {
     required this.channel,
     required this.channelImg,
   });
+
+  @override
+  State<TrendingCard> createState() => _TrendingCardState();
+}
+
+class _TrendingCardState extends State<TrendingCard> {
+  Timer? timer;
+  int _start = 1;
+
+  bool showImage = false;
+  @override
+  void initState() {
+    super.initState();
+
+    startTimer();
+  }
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    timer = Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (_start == 0) {
+          setState(() {
+            showImage = true;
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    timer!.cancel();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,9 +162,22 @@ class TrendingCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(30),
-                child: Image.asset(
-                  image,
-                  fit: BoxFit.fill,
+                child: Container(
+                  height: 180,
+                  width: double.infinity,
+                  child: showImage == false
+                      ? Placeholder(
+                          child: Container(
+                            decoration:
+                                BoxDecoration(color: Colors.grey.shade400),
+                            height: 180,
+                          ),
+                        )
+                      : Image.network(
+                          widget.image,
+                          // placeholder: (context, url) => CircularProgressIndicator(),
+                          fit: BoxFit.fill,
+                        ),
                 ),
               ),
               Container(
@@ -108,7 +188,7 @@ class TrendingCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Text(
-                  tag,
+                  widget.tag,
                   style: Theme.of(context).textTheme.labelSmall,
                 ),
               )
@@ -135,7 +215,9 @@ class TrendingCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              headline,
+              widget.headline.length > 32
+                  ? "${widget.headline.substring(0, 32)}..."
+                  : widget.headline,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
@@ -150,11 +232,13 @@ class TrendingCard extends StatelessWidget {
                   child: Container(
                     height: 30,
                     width: 30,
-                    child: Image.asset(channelImg, fit: BoxFit.fill),
+                    child: Image.network(widget.channelImg, fit: BoxFit.fill),
                   ),
                 ),
                 // const SizedBox(width: 20),
-                Text(channel),
+                Text(widget.channel.length > 20
+                    ? widget.channel.substring(0, 20)
+                    : widget.channel),
                 const SizedBox(width: 40),
                 IconButton(
                     onPressed: () {},
