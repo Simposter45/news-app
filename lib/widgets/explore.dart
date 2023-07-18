@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:news_app/helper/category_list.dart';
 import 'package:news_app/helper/explore_list.dart';
+import 'package:news_app/models/category_model.dart';
 import 'package:news_app/models/explore_model.dart';
 
 class Explore extends StatefulWidget {
@@ -12,7 +14,7 @@ class Explore extends StatefulWidget {
 }
 
 class _ExploreState extends State<Explore> {
-  List<ExploreModel> categories = <ExploreModel>[];
+  List<CategoryModel> categories = <CategoryModel>[];
 
   @override
   void initState() {
@@ -40,7 +42,7 @@ class _ExploreState extends State<Explore> {
         ),
         const SizedBox(height: 30),
         SizedBox(
-          height: 100,
+          height: 120,
           child: ListView.builder(
             padding: EdgeInsets.zero,
             physics: BouncingScrollPhysics(),
@@ -50,8 +52,8 @@ class _ExploreState extends State<Explore> {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: ExploreCard(
-                  image: categories[index].image!,
-                  text: categories[index].text!,
+                  image: categories[index].imageURl!,
+                  text: categories[index].categoryName!,
                 ),
               );
             },
@@ -78,17 +80,20 @@ class ExploreCard extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundImage: AssetImage(
+          backgroundImage: NetworkImage(
             image,
           ),
         ),
         const CircleAvatar(
           radius: 50,
-          backgroundColor: Colors.black26,
+          backgroundColor: Colors.black38,
         ),
         Text(
           text,
-          style: Theme.of(context).textTheme.labelSmall,
+          style: Theme.of(context)
+              .textTheme
+              .labelSmall!
+              .copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );

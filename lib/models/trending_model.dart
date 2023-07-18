@@ -4,4 +4,5 @@ class TrendingModel {
   String? tag;
   String? channel;
   String? channelImg;
+  String? url;
 }

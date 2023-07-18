@@ -7,8 +7,15 @@ class TrendNews {
   List<ApiModel> apiList = <ApiModel>[];
 
   Future<void> getNews(String category) async {
-    String url =
-        'https://newsapi.org/v2/top-headlines?country=in&category=$category&apiKey=8b4cd2ce17024c70b47044fa15905b74';
+    String url;
+
+    if (category == "") {
+      url =
+          'https://newsapi.org/v2/top-headlines?country=in&sortBy=popularity&apiKey=8b4cd2ce17024c70b47044fa15905b74';
+    } else {
+      url =
+          'https://newsapi.org/v2/top-headlines?country=in&category=$category&apiKey=8b4cd2ce17024c70b47044fa15905b74';
+    }
 
     final response = await http.get(Uri.parse(url));
     var data = jsonDecode(response.body);
@@ -24,9 +31,12 @@ class TrendNews {
           urlToImage: element['urlToImage'] ?? '',
           publishedAt: element['publishedAt'] ?? '',
           content: element['content'] ?? '',
-          category: category,
+          category: element['category'] ?? '',
         );
-        apiList.add(apiModel);
+
+        if (element['urlToImage'] != null && element['url'] != null) {
+          apiList.add(apiModel);
+        }
       });
     }
   }

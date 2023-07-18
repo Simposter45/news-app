@@ -1,6 +1,6 @@
 import 'package:news_app/models/explore_model.dart';
 
-List<ExploreModel> getCategories() {
+List<ExploreModel> getExp() {
   List<ExploreModel> categories = <ExploreModel>[];
   ExploreModel exploreModel;
 

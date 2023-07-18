@@ -1,6 +1,6 @@
 import 'package:news_app/models/news_model.dart';
 
-List<NewsModel> getNews() {
+List<NewsModel> getNewsList() {
   List<NewsModel> newsList = <NewsModel>[];
   NewsModel newsModel;
 

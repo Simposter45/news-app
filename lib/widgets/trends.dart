@@ -1,13 +1,12 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:news_app/helper/api_call.dart';
 import 'package:news_app/helper/category_list.dart';
-import 'package:news_app/helper/trending_list.dart';
+
 import 'package:news_app/models/api_model.dart';
 import 'package:news_app/models/category_model.dart';
-import 'package:news_app/models/trending_model.dart';
+import 'package:news_app/webpage_screen.dart';
 
 class Trends extends StatefulWidget {
   const Trends({
@@ -29,7 +28,7 @@ class _TrendsState extends State<Trends> {
     fetchTrendingNews();
   }
 
-  fetchTrendingNews() async {
+  Future<void> fetchTrendingNews() async {
     TrendNews newsClass = TrendNews();
 
     for (CategoryModel category in categories) {
@@ -79,6 +78,7 @@ class _TrendsState extends State<Trends> {
                     tag: categories[index].categoryName!,
                     channel: newTrends[index].sourceName!,
                     channelImg: categories[index].imageURl!,
+                    url: newTrends[index].url!,
                   ),
                 );
               }),
@@ -94,6 +94,7 @@ class TrendingCard extends StatefulWidget {
   final String tag;
   final String channel;
   final String channelImg;
+  final String url;
   const TrendingCard({
     super.key,
     required this.image,
@@ -101,6 +102,7 @@ class TrendingCard extends StatefulWidget {
     required this.tag,
     required this.channel,
     required this.channelImg,
+    required this.url,
   });
 
   @override
@@ -147,110 +149,118 @@ class _TrendingCardState extends State<TrendingCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      width: 300,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(30),
-        // border: Border.all(color: Colors.black, width: 5),
-      ),
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: Container(
-                  height: 180,
-                  width: double.infinity,
-                  child: showImage == false
-                      ? Placeholder(
-                          child: Container(
-                            decoration:
-                                BoxDecoration(color: Colors.grey.shade400),
-                            height: 180,
-                          ),
-                        )
-                      : Image.network(
-                          widget.image,
-                          // placeholder: (context, url) => CircularProgressIndicator(),
-                          fit: BoxFit.fill,
-                        ),
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.all(10),
-                margin: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Text(
-                  widget.tag,
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-              )
-            ],
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "🔥 Trending no. 1",
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                Text(
-                  "2 days ago",
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-          // const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              widget.headline.length > 32
-                  ? "${widget.headline.substring(0, 32)}..."
-                  : widget.headline,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-          // const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => WebPageScreen(url: widget.url)));
+      },
+      child: Container(
+        height: 200,
+        width: 300,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(30),
+          // border: Border.all(color: Colors.black, width: 5),
+        ),
+        child: Column(
+          children: [
+            Stack(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(40),
+                  borderRadius: BorderRadius.circular(30),
                   child: Container(
-                    height: 30,
-                    width: 30,
-                    child: Image.network(widget.channelImg, fit: BoxFit.fill),
+                    height: 180,
+                    width: double.infinity,
+                    child: showImage == false
+                        ? Placeholder(
+                            child: Container(
+                              decoration:
+                                  BoxDecoration(color: Colors.grey.shade400),
+                              height: 180,
+                            ),
+                          )
+                        : Image.network(
+                            widget.image,
+                            // placeholder: (context, url) => CircularProgressIndicator(),
+                            fit: BoxFit.fill,
+                          ),
                   ),
                 ),
-                // const SizedBox(width: 20),
-                Text(widget.channel.length > 20
-                    ? widget.channel.substring(0, 20)
-                    : widget.channel),
-                const SizedBox(width: 40),
-                IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.more_horiz,
-                      size: 20,
-                      color: Theme.of(context).iconTheme.color,
-                    ))
+                Container(
+                  padding: EdgeInsets.all(10),
+                  margin: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Text(
+                    widget.tag,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                )
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "🔥 Trending no. 1",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  Text(
+                    "2 days ago",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            // const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                widget.headline.length > 32
+                    ? "${widget.headline.substring(0, 32)}..."
+                    : widget.headline,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
+            // const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(40),
+                    child: Container(
+                      height: 30,
+                      width: 30,
+                      child: Image.network(widget.channelImg, fit: BoxFit.fill),
+                    ),
+                  ),
+                  // const SizedBox(width: 20),
+                  Text(widget.channel.length > 20
+                      ? widget.channel.substring(0, 20)
+                      : widget.channel),
+                  const SizedBox(width: 40),
+                  IconButton(
+                      onPressed: () {},
+                      icon: Icon(
+                        Icons.more_horiz,
+                        size: 20,
+                        color: Theme.of(context).iconTheme.color,
+                      ))
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
