@@ -1,11 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:news_app/helper/category_list.dart';
-import 'package:news_app/helper/news_list.dart';
+
 import 'package:news_app/helper/api_call.dart';
 import 'package:news_app/models/api_model.dart';
-import 'package:news_app/models/category_model.dart';
-import 'package:news_app/models/news_model.dart';
+
 import 'package:news_app/webpage_screen.dart';
 
 class News extends StatefulWidget {

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:news_app/helper/category_list.dart';
-import 'package:news_app/helper/explore_list.dart';
 import 'package:news_app/models/category_model.dart';
-import 'package:news_app/models/explore_model.dart';
 
 class Explore extends StatefulWidget {
   const Explore({

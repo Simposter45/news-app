@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebPageScreen extends StatefulWidget {
-  String url;
+  final String url;
   WebPageScreen({
     super.key,
     required this.url,
