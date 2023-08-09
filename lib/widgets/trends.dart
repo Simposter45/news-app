@@ -20,28 +20,33 @@ class Trends extends StatefulWidget {
 class _TrendsState extends State<Trends> {
   List<ApiModel> newTrends = <ApiModel>[];
   List<CategoryModel> categories = <CategoryModel>[];
+  bool _loading = true;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     categories = getCategories();
-    fetchTrendingNews();
+    fetchTrendingNews().then((trendingNews) {
+      setState(() {
+        newTrends = trendingNews;
+        _loading = false;
+      });
+    });
   }
 
-  Future<void> fetchTrendingNews() async {
+  Future<List<ApiModel>> fetchTrendingNews() async {
     TrendNews newsClass = TrendNews();
+    List<ApiModel> trends = [];
 
     for (CategoryModel category in categories) {
       await newsClass.getNews(category.categoryName!);
       if (newsClass.apiList.isNotEmpty) {
-        newTrends.add(newsClass.apiList.first);
+        trends.add(newsClass.apiList.first);
       }
       newsClass.apiList.clear();
     }
 
-    setState(() {
-      newTrends = List<ApiModel>.from(newTrends);
-    });
+    return trends;
   }
 
   @override
@@ -62,26 +67,39 @@ class _TrendsState extends State<Trends> {
           ],
         ),
         const SizedBox(height: 20),
-        SizedBox(
-          height: 380,
-          child: ListView.builder(
-              padding: EdgeInsets.zero,
-              physics: BouncingScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: TrendingCard(
-                    image: newTrends[index].urlToImage!,
-                    headline: newTrends[index].title!,
-                    tag: categories[index].categoryName!,
-                    channel: newTrends[index].sourceName!,
-                    channelImg: categories[index].imageURl!,
-                    url: newTrends[index].url!,
-                  ),
-                );
-              }),
+        FutureBuilder<List<ApiModel>>(
+          future: fetchTrendingNews(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else {
+              newTrends = snapshot.data ?? [];
+              return SizedBox(
+                height: 380,
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  physics: BouncingScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: newTrends.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: TrendingCard(
+                        image: newTrends[index].urlToImage!,
+                        headline: newTrends[index].title!,
+                        tag: categories[index].categoryName!,
+                        channel: newTrends[index].sourceName!,
+                        channelImg: categories[index].imageURl!,
+                        url: newTrends[index].url!,
+                      ),
+                    );
+                  },
+                ),
+              );
+            }
+          },
         ),
       ],
     );
